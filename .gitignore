@@ -171,3 +171,4 @@ public/*
 .env
 .DS_Store
 package-lock.json
+.next/
