@@ -1,13 +1,13 @@
 version: '3'
 services:
   api:
-    container_name: flask-container
+    container_name: cyborg-container
     build: .
-    entrypoint: python app.py
+    entrypoint: npm run start
     env_file:
       - .env
     ports:
-      - '5000:5000'
+      - '8080:8080'
 
   redis:
     image: redis
