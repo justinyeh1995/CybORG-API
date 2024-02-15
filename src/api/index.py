@@ -23,6 +23,7 @@ def handle_login():
 @app.route("/api/upload", methods=["GET", "POST"])
 def handle_upload():
     eprint("Upload Endpoint Reached")
+    return "<p>Test Upload Enpoint</p>"
 
 @app.route("/api/start", methods=["GET", "POST"])
 def hanlde_start():
