@@ -1,7 +1,9 @@
 import requests
 from flask import Flask, jsonify, request, redirect
 from flask_cors import CORS
-from utils import eprint
+
+from api.utils.util import eprint
+from api.utils.aws_util import *
 
 app = Flask(__name__)
 CORS(app)
@@ -18,6 +20,9 @@ def handle_login():
     # redirect
     return redirect("/", code=302)
 
+@app.route("/api/upload", methods=["GET", "POST"])
+def handle_upload():
+    eprint("Upload Endpoint Reached")
 
 @app.route("/api/start", methods=["GET", "POST"])
 def hanlde_start():
