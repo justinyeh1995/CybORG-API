@@ -1,5 +1,5 @@
 import requests
-from flask import Flask, jsonify, request, redirect
+from flask import Flask, jsonify, request, redirect, url_for, session
 from flask_cors import CORS
 
 from api.utils.util import eprint
@@ -8,30 +8,72 @@ from api.utils.aws_util import *
 app = Flask(__name__)
 CORS(app)
 
-@app.route("/api/register", methods=["GET", "POST"])
+
+@app.route("/api/register", methods=["POST"])
 def handle_register():
     eprint("Register Endpoint Reached")
+    # save to db
+    # redirect to login page
+    return redirect("/login", code=302)
 
-@app.route("/api/login", methods=["GET", "POST"])
+
+@app.route("/api/login", methods=["POST"])
 def handle_login():
     eprint("Login Endpoint Reached")
-    # generate a new user session 
+    if request.method == 'POST':
+        session['username'] = request.form['username']
+        return redirect(url_for(''))
+    # regenerate a new user session 
     # auth
     # redirect
     return redirect("/", code=302)
 
-@app.route("/api/upload", methods=["GET", "POST"])
+
+@app.route('/api/logout', methods=["GET"])
+def logout():
+    # remove the username from the session if it's there
+    session.pop('username', None)
+    return redirect(url_for('index'))
+
+
+@app.route("/api/upload/<game_id>", methods=["POST"])
 def handle_upload():
     eprint("Upload Endpoint Reached")
+    # talk to s3
     return "<p>Test Upload Enpoint</p>"
 
-@app.route("/api/start", methods=["GET", "POST"])
+
+@app.route("/api/game", methods=["POST"])
 def hanlde_start():
-    # session creation
-    # store it in redis {sess, info}
-    # perform first step
+    # check authorization
+
+    # parse user config, default models/s3 models? red agents? stpes?
+
+    # game state init
+    '''
+    {   
+        game_id,
+        step,
+        state,
+        red,
+        maxx_step
+    }
+    '''
+    
+    # store it in redis {game_id, game_state}
+    
+    # schema
     # store {sess: id, curr_step, info: obj} in db
-    # return info 
+    
+    # return game_id 
+
+    # error handling
+    pass
+
+
+@app.route("/api/perform_step/<game_id>", methods=["GET"])
+def handle_next_step(game_id):
+    # the game_id should map to a redis records with a game state
     pass
 
 
