@@ -1,6 +1,20 @@
+from CybORG.Agents import B_lineAgent, BlueReactRestoreAgent, BlueReactRemoveAgent, \
+    RandomAgent, RedMeanderAgent, SleepAgent
+from CybORG.Agents.MainAgent import MainAgent
+
+from CybORG.Agents.Wrappers.ChallengeWrapper import ChallengeWrapper
+from CybORG.Agents.Wrappers import EnumActionWrapper
+from CybORG.Agents.Wrappers.FixedFlatWrapper import FixedFlatWrapper
+from CybORG.Agents.Wrappers.IntListToAction import IntListToActionWrapper
+from CybORG.Agents.Wrappers.OpenAIGymWrapper import OpenAIGymWrapper
+from CybORG.Simulator.Scenarios.FileReaderScenarioGenerator import FileReaderScenarioGenerator
+
+from CybORG.Tutorial.Visualizers import GameStateManager, NetworkVisualizer
+
 class SimpleAgentRunner:
     def __init__(self, num_steps, red_agent_type):
-        self.num_steps = num_steps
+        self.max_steps = num_steps
+        self.current_step = 0
         self.red_agent_type = red_agent_type
         self.agent = BlueReactRemoveAgent()  # Change this line to load your agent
         self.cyborg = None
@@ -18,7 +32,10 @@ class SimpleAgentRunner:
             num_steps=self.num_steps
         )
 
-    def run_step(self, step_num):
+    def run_next_step(self):
+        if self.current_step > self.max_steps:
+            return None
+            
         if not self.cyborg:
             self.setup()
         
@@ -28,8 +45,9 @@ class SimpleAgentRunner:
         result = self.cyborg.step('Blue', blue_action, skip_valid_action_check=False)
 
         state_snapshot = self.game_state_manager.create_state_snapshot()
-        self.game_state_manager.store_state(state_snapshot, step_num, self.num_steps)
+        self.game_state_manager.store_state(state_snapshot, self.current_step, self.max_steps)
 
+        self.current_step += 1
         # Return the current state, rewards, actions, etc., as needed
         return state_snapshot
 
