@@ -1,6 +1,17 @@
+import subprocess
+import inspect
+import time
+import os
+from statistics import mean, stdev
+import random
+import collections
+from pprint import pprint
+
+from CybORG import CybORG, CYBORG_VERSION
+
 from CybORG.Agents import B_lineAgent, BlueReactRestoreAgent, BlueReactRemoveAgent, \
     RandomAgent, RedMeanderAgent, SleepAgent
-from CybORG.Agents.MainAgent import MainAgent
+# from CybORG.Agents.MainAgent import MainAgent
 
 from CybORG.Agents.Wrappers.ChallengeWrapper import ChallengeWrapper
 from CybORG.Agents.Wrappers import EnumActionWrapper
@@ -15,12 +26,13 @@ class SimpleAgentRunner:
     def __init__(self, num_steps, red_agent_type):
         self.max_steps = num_steps
         self.current_step = 0
-        self.red_agent_type = red_agent_type
+        self.red_agent_type = B_lineAgent # red_agent_type
         self.agent = BlueReactRemoveAgent()  # Change this line to load your agent
         self.cyborg = None
         self.game_state_manager = GameStateManager()
 
     def setup(self):
+        pprint(str(inspect.getfile(CybORG))[:-7])
         path = str(inspect.getfile(CybORG))[:-7] + '/Simulator/Scenarios/scenario_files/Scenario2.yaml'
         sg = FileReaderScenarioGenerator(path)
         red_agent = self.red_agent_type()
@@ -29,7 +41,7 @@ class SimpleAgentRunner:
             cyborg=self.cyborg,
             red_agent=red_agent,
             blue_agent=self.agent,
-            num_steps=self.num_steps
+            num_steps=self.max_steps
         )
 
     def run_next_step(self):
