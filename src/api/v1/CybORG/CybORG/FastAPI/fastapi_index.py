@@ -2,10 +2,11 @@ from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Union
-
+from pprint import pprint
 import redis
 import uuid
 import json
+
 
 from CybORG import CybORG, CYBORG_VERSION 
 # @To-Do import CyborgAAS...
@@ -23,7 +24,7 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
-# Redis connection
+# Redis connection # for persistent issue
 r = redis.Redis(host='localhost', port=6379, db=0)
 
 # Mapping of game_id to SimpleAgentRunner instances
@@ -45,12 +46,10 @@ async def start_game(request: Request, config: GameConfig):
 
     active_games[game_id] = runner
 
-    # Seems redundant for now, @To-Do: How can we store the snapshot in an efficient way, serialize by protobuf? a big dictionary?
     game_state = {
         "game_id": game_id,
         "step": 0,
-        "red": config.red_agents,
-        "max_step": config.steps
+        "state": runner.game_state_manager.game_states,
     }
 
     # Store in Redis
@@ -65,9 +64,18 @@ async def game_step(game_id: str):
     runner = active_games.get(game_id)
     if not runner:
         raise HTTPException(status_code=404, detail="Game not found")
-    
+
     state_snapshot = runner.run_next_step()
     
+    game_state = {
+        "game_id": game_id,
+        "step": runner.current_step,
+        "state": runner.game_state_manager.game_states,
+    }
+
+    # Store in Redis
+    r.set(game_id, json.dumps(game_state))  # Serialize game_state to store in Redis
+
     return state_snapshot
     
 @app.get("/api/game/{game_id}")
@@ -81,15 +89,17 @@ async def game_step(game_id: str):
     
     return state_snapshot
 
-@app.post("/api/game/{game_id}/end")
+@app.delete("/api/game/{game_id}")
 async def end_game(game_id: str):
     if game_id in active_games:
-        # Here you could also include any teardown logic for the runner
+        # Include any teardown logic for the runner here
         del active_games[game_id]
+        # Clean up any persistent state in Redis or other databases
+        r.delete(game_id)
         return {"message": "Game ended successfully"}
     else:
-        raise HTTPException(status_code=404, detail="Game not found")
-
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Game not found")
+        
 @app.get("/")
 def read_root():
     print("Hello FastAPI")
