@@ -33,11 +33,12 @@ class FileReaderScenarioGenerator(ScenarioGenerator):
 
         from CybORG import CybORG
         cyborg_path = Path(inspect.getfile(CybORG))
-        images_file_path = Path(cyborg_path.parent, '/Simulator/Scenarios/scenario_files/images/')
+        images_file_path = Path(cyborg_path.parent, 'Simulator/Scenarios/scenario_files/images/')
 
         with Path(images_file_path, 'images.yaml').open() as fIn:
             images_dict = yaml.load(fIn, Loader=yaml.FullLoader)
 
+        # READ IN HOSTS
         if scenario_dict is not None:
 
             hosts_dict = scenario_dict["Hosts"]
@@ -48,7 +49,7 @@ class FileReaderScenarioGenerator(ScenarioGenerator):
 
                 if 'path' in host_image_info:
                     # REPLACE "image" KEY WITH DATA FROM IMAGE FILE
-                    with Path(images_file_path, host_image_info['path']).with_suffix('.yaml') as fIn2:
+                    with Path(images_file_path, host_image_info['path']).with_suffix('.yaml').open() as fIn2:
                         host_data.update(yaml.load(fIn2, Loader=yaml.FullLoader).pop('Test_Host'))
                     host_data.pop('image')
                 else:
@@ -73,6 +74,8 @@ class FileReaderScenarioGenerator(ScenarioGenerator):
             agents_dict[agent_name]["team"] = agent_name
 
         #print(scenario_dict)
+        # with Path(Path(__file__).parent, "foo").open("w") as fOut:
+        #     yaml.dump(scenario_dict, fOut, indent=2)
         scenario = Scenario.load(scenario_dict)
 
         #print('scenario is:',scenario)
@@ -164,3 +167,4 @@ class FileReaderScenarioGenerator(ScenarioGenerator):
 
     def __str__(self):
         return str(self.file_path.absolute())
+        
