@@ -10,7 +10,7 @@ import json
 
 from CybORG import CybORG, CYBORG_VERSION 
 # @To-Do import CyborgAAS...
-from CybORG.Tutorial.Runner.SimpleAgentRunner import SimpleAgentRunner
+from CybORG.CyborgAAS.Runner.SimpleAgentRunner import SimpleAgentRunner
 
 app = FastAPI()
 
@@ -31,7 +31,9 @@ r = redis.Redis(host='localhost', port=6379, db=0)
 active_games = {}
 
 class GameConfig(BaseModel):
-    red_agents: str = "B_lineAgent"
+    red_agent: str = "B_lineAgent"
+    blue_agent: str = "BlueReactRemoveAgent"
+    wrapper: str = "simple"
     steps: int = 10
 
 
@@ -41,7 +43,7 @@ async def start_game(request: Request, config: GameConfig):
     # Generate game_id and initialize state
     game_id = str(uuid.uuid4())
     
-    runner = SimpleAgentRunner(config.steps, config.red_agents)
+    runner = SimpleAgentRunner(config.steps, config.wrapper, config.red_agent, config.blue_agent)
     runner.setup()
 
     active_games[game_id] = runner
