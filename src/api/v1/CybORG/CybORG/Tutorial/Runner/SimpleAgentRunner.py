@@ -20,7 +20,8 @@ from CybORG.Agents.Wrappers.IntListToAction import IntListToActionWrapper
 from CybORG.Agents.Wrappers.OpenAIGymWrapper import OpenAIGymWrapper
 from CybORG.Simulator.Scenarios.FileReaderScenarioGenerator import FileReaderScenarioGenerator
 
-from CybORG.Tutorial.Visualizers import GameStateManager, NetworkVisualizer
+from CybORG.Tutorial.Visualizers import NetworkVisualizer
+from CybORG.Tutorial.GameStateManager import GameStateManager
 
 class SimpleAgentRunner:
     def __init__(self, num_steps, red_agent_type):
