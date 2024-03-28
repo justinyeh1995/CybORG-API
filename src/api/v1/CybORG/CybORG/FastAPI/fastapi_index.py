@@ -44,7 +44,7 @@ async def start_game(request: Request, config: GameConfig):
     game_id = str(uuid.uuid4())
     
     runner = SimpleAgentRunner(config.steps, config.wrapper, config.red_agent, config.blue_agent)
-    runner.setup()
+    runner.configure()
 
     active_games[game_id] = runner
 
