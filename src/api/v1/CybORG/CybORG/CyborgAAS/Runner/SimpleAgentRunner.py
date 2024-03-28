@@ -109,8 +109,8 @@ class SimpleAgentRunner:
         self.cyborg = self.cyborg_factory.create(type=self.wrapper_type, red_agent=self.red_agent)
         self.game_state_manager.set_environment(
             cyborg=self.cyborg,
-            red_agent=self.red_agent_type,
-            blue_agent=self.blue_agent_type,
+            red_agent_type=self.red_agent_type,
+            blue_agent_type=self.blue_agent_type,
             num_steps=self.max_steps
         )
 
