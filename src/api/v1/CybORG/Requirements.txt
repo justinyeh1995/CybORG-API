@@ -12,3 +12,4 @@ pygame
 plotly
 pandas
 fastapi
+sqlalchemy
