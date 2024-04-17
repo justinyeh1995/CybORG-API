@@ -92,7 +92,8 @@ async def run_all_steps(game_id: str):
         raise HTTPException(status_code=404, detail="Game not found")
 
     game_states = runner.run_all_step()
-    
+
+    # @To-Do: decide how to store states for review 
     game_state = {
         "game_id": game_id,
         "history": runner.game_state_manager.game_states,
