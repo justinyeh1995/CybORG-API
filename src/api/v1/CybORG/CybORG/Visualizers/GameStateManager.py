@@ -208,7 +208,7 @@ class GameStateManager:
 
         positions = nx.spring_layout(link_diagram, dim=3, seed=3113794652)
         node_positions = [
-            {'x': float(pos[0]), 'y': float(pos[1]), 'z': float(pos[2])}
+            {'id': str(node), 'x': float(pos[0]), 'y': float(pos[1]), 'z': float(pos[2])}
             for node, pos in positions.items()
         ]
         
