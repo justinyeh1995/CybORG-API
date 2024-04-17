@@ -205,19 +205,23 @@ class GameStateManager:
         compromised_hosts = self.compromised_hosts.copy()
 
         self.true_table = self._get_true_state_table()
+
+        positions = nx.spring_layout(link_diagram, dim=3, seed=3113794652)
+        node_positions = [
+            {'x': float(pos[0]), 'y': float(pos[1]), 'z': float(pos[2])}
+            for node, pos in positions.items()
+        ]
         
         action_snapshot = {
             # Populate with necessary state information
             'link_diagram': nx.node_link_data(link_diagram),  # Assuming link_diagram is a NetworkX graph
-            'node_colors': node_colors.copy(),
-            'node_borders': node_borders.copy(),
+            'node_positions': node_positions,
+            'node_colors': node_colors,
+            'node_borders': node_borders,
             'compromised_hosts': list(compromised_hosts),
-            'host_info': host_info.copy(),
-            # 'exploited_hosts': exploited_hosts.copy(),
-            # 'escalated_hosts': escalated_hosts.copy(),
-            'action_info': action_info.copy(),
-            # 'ip_map': self.ip_map.copy(),
-            'host_map': self.host_map.copy(),
+            'host_info': host_info,
+            'action_info': action_info,
+            'host_map': self.host_map,
         }
 
         return action_snapshot
