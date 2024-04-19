@@ -174,7 +174,13 @@ def read_root():
                                 <a href="https://solitairejs.com/">View Project</a>
                             </div>
                             
-                            <!-- Repeat for other projects -->
+                            <!-- Project 2 -->
+                            <div class="project">
+                                <h3>iOS AR Visualization App</h3>
+                                <img src="https://raw.githubusercontent.com/cage-challenge/cage-challenge-2/main/images/figure1.png" alt="Project Image">
+                                <p>This App visulize the underlying network state of <a href="https://github.com/cage-challenge/cage-challenge-2">CybORG 2</a> in AR using SwiftUI, ARKit, RealityKit.</p>
+                                <a href="https://github.com/justinyeh1995/CybORG-ARViz/">View Project</a>
+                            </div>
                         </div>
                     </section>
                     
