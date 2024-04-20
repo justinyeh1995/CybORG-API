@@ -171,15 +171,15 @@ def read_root():
                                 <h3>SolitaireJS.com</h3>
                                 <img src="path_to_image" alt="Project Image">
                                 <p>Description of your project. What was your role, what technologies did you use, and what was the outcome?</p>
-                                <a href="https://solitairejs.com/">View Project</a>
+                                <a href="https://solitairejs.com/" target="_blank">View Project</a>
                             </div>
                             
                             <!-- Project 2 -->
                             <div class="project">
                                 <h3>iOS AR Visualization App</h3>
                                 <img src="https://raw.githubusercontent.com/cage-challenge/cage-challenge-2/main/images/figure1.png" alt="Project Image">
-                                <p>This App visulize the underlying network state of <a href="https://github.com/cage-challenge/cage-challenge-2">CybORG 2</a> in AR using SwiftUI, ARKit, RealityKit.</p>
-                                <a href="https://github.com/justinyeh1995/CybORG-ARViz/">View Project</a>
+                                <p>This App visulize the underlying network state of <a href="https://github.com/cage-challenge/cage-challenge-2" target="_blank">CybORG 2</a> in AR using SwiftUI, ARKit, RealityKit.</p>
+                                <a href="https://github.com/justinyeh1995/CybORG-ARViz/" target="_blank">View Project</a>
                             </div>
                         </div>
                     </section>
