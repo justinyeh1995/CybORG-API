@@ -80,7 +80,8 @@ class GameStateManager:
         #     hover_text+=f"- {process_name} (PID: {pid}, User: {username}, {port_info})<br>"
         
         if '_router' in node:
-            return f"Subnet: {self.cidr_map[node.split("_")[0]]}"
+            subnet = node.split("_")[0]
+            return f"Subnet: {self.cidr_map[subnet]}"
 
         hover_text = f"IP Address: {self.cyborg_host_to_ip_map[node]}"
 
