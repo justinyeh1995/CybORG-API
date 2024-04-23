@@ -48,6 +48,10 @@ class GameStateCollector:
     def _create_ip_host_maps(self):
         self.ip_map = dict(map(lambda item: (str(item[0]), item[1]), self.cyborg.environment_controller.state.ip_addresses.items()))
         self.host_map = {host: str(ip) for ip, host in self.ip_map.items()}
+        self.cidr_map = {lan_name: str(ip) for lan_name, ip in self.cyborg.get_cidr_map().items()}
+        self.cidr_to_host_map = {str(ip): lan_name for lan_name, ip in self.cyborg.get_cidr_map().items()}
+        self.cyborg_ip_to_host_map = {str(ip): host for host, ip in self.cyborg.get_ip_map().items()}
+        self.cyborg_host_to_ip_map = {host: str(ip) for host, ip in self.cyborg.get_ip_map().items()}
 
     def _get_true_state(self):
         return deepcopy(self.cyborg.get_agent_state('True'))
@@ -86,8 +90,13 @@ class GameStateCollector:
         
         link_diagram = self.cyborg.environment_controller.state.link_diagram
         
+        # @To-Do: handles string in a very ad-hoc manner 
+        if action_type == "Monitor":
+            target_host = "the whole network"
+            
+        decription = f"At Host User0 do {action_type} on {target_host}" if host_type == "Red" else f"At Host Defender do {action_type} on {target_host}"
         action_info = {
-            "action": action, 
+            "action": decription, 
             "success": isSuccess
         }
         
@@ -119,19 +128,38 @@ class GameStateCollector:
 
         accu_reward = self._get_agent_rewards(host_type)
         # print(self.accumulated_rewards)
+
+        positions = nx.spring_layout(link_diagram, dim=3, seed=3113794652)
+        node_positions = [
+            {'id': str(node), 'x': float(pos[0]), 'y': float(pos[1]), 'z': float(pos[2])}
+            for node, pos in positions.items()
+        ]
         
+        # action_snapshot = {
+        #     # Populate with necessary state information
+        #     'link_diagram': nx.node_link_data(link_diagram),
+        #     'node_positions': node_positions,
+        #     'node_colors': node_colors,
+        #     'node_borders': node_borders,
+        #     'compromised_hosts': compromised_hosts,
+        #     'host_info': host_info,
+        #     'action_info': action_info,
+        #     'host_map': self.host_map,
+        #     'obs': observation,
+        #     'reward': reward,
+        #     'accumulate_reward': accu_reward,
+        # }
+
         action_snapshot = {
             # Populate with necessary state information
-            'link_diagram': link_diagram,  # Assuming link_diagram is a NetworkX graph
+            'link_diagram': nx.node_link_data(link_diagram),  # Assuming link_diagram is a NetworkX graph
+            'node_positions': node_positions,
             'node_colors': node_colors,
             'node_borders': node_borders,
-            'compromised_hosts': compromised_hosts,
+            'compromised_hosts': list(compromised_hosts),
             'host_info': host_info,
             'action_info': action_info,
             'host_map': self.host_map,
-            'obs': observation,
-            'reward': reward,
-            'accumulate_reward': accu_reward,
         }
 
         return action_snapshot 
@@ -145,7 +173,10 @@ class GameStateCollector:
         if isSuccess:
             target_host = action_str_split[-1] if n > 1 else target_host
             # Update target ho st if it's an IP address to get the hostname
-            target_host = ip_map.get(target_host, target_host) if target_host in ip_map else target_host
+            if target_host in ip_map:
+                target_host = ip_map.get(target_host, target_host) 
+            elif target_host in self.cidr_to_host_map:
+                target_host = self.cidr_to_host_map.get(target_host, target_host)
         return target_host, action_type, isSuccess
         
     def update_hosts(self, target_host, action_type, host_map, ip_map, host_type='Red'):
