@@ -146,8 +146,8 @@ class GameStateManager:
                     #@ To-Do code smells
                     _cidr = ".".join(target_host.split(".")[:3])
                     for ip in ip_map:
-                        if _cidr in ip and 'router' in ip_map[ip]:
-                            discovered_subnet = ip_map[ip]
+                        if _cidr in ip and 'router' in self.cyborg_ip_to_host_map[ip]:
+                            discovered_subnet = self.cyborg_ip_to_host_map[ip]
                             target_host = discovered_subnet
                 elif 'DiscoverNetworkServices' in action_type:
                     discovered_system = target_host
