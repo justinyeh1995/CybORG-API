@@ -6,6 +6,8 @@ from copy import deepcopy
 from statistics import mean, stdev
 import random
 import collections
+import networkx as nx
+
 from pprint import pprint
 from enum import Enum
 from CybORG.Agents.Wrappers.TrueTableWrapper import true_obs_to_table
