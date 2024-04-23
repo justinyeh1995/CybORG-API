@@ -23,7 +23,7 @@ from CybORG.Agents.Wrappers.IntListToAction import IntListToActionWrapper
 from CybORG.Agents.Wrappers.OpenAIGymWrapper import OpenAIGymWrapper
 from CybORG.Simulator.Scenarios.FileReaderScenarioGenerator import FileReaderScenarioGenerator
 
-from CybORG.Visualizers import NetworkVisualizer, GameStateManager
+from CybORG.GameVisualizer.GameStateCollector import GameStateCollector
 
 @dataclass
 class RedAgentFactory:
@@ -92,7 +92,7 @@ class SimpleAgentRunner:
         self.cyborg_factory = CybORGFactory()
         self.cyborg = None
         
-        self.game_state_manager = GameStateManager()
+        self.game_state_manager = GameStateCollector(environment='sim')
 
     def set_red_type(self, red_agent_type: str):
         self.red_agent_type = red_agent_type
@@ -109,11 +109,11 @@ class SimpleAgentRunner:
         self.cyborg = self.cyborg_factory.create(type=self.wrapper_type, red_agent=self.red_agent)
         self.game_state_manager.set_environment(
             cyborg=self.cyborg,
-            red_agent_type=self.red_agent_type,
-            blue_agent_type=self.blue_agent_type,
+            red_agent_name=self.red_agent_type,
+            blue_agent_name=self.blue_agent_type,
             num_steps=self.max_steps
         )
-
+            
     def run_next_step(self):
         if self.current_step > self.max_steps:
             return None
@@ -126,7 +126,10 @@ class SimpleAgentRunner:
         blue_action = self.blue_agent.get_action(blue_obs, blue_action_space)
         result = self.cyborg.step('Blue', blue_action, skip_valid_action_check=False)
 
-        state_snapshot = self.game_state_manager.create_state_snapshot()
+        actions = {"Red":str(self.cyborg.get_last_action('Red')), "Blue": str(self.cyborg.get_last_action('Blue'))}
+        observations = {"Red": self.cyborg.get_observation('Red'), "Blue": self.cyborg.get_observation('Blue')}
+        
+        state_snapshot = self.game_state_manager.create_state_snapshot(actions, observations)
         self.game_state_manager.store_state(state_snapshot, self.current_step, self.max_steps)
 
         self.current_step += 1
@@ -168,8 +171,10 @@ class SimpleAgentRunner:
                             
                         result = self.cyborg.step('Blue', blue_action, skip_valid_action_check=False)
                         
-                        # create state for this step
-                        state_snapshot = self.game_state_manager.create_state_snapshot()
+                        actions = {"Red":str(self.cyborg.get_last_action('Red')), "Blue": str(self.cyborg.get_last_action('Blue'))}
+                        observations = {"Red": self.cyborg.get_observation('Red'), "Blue": self.cyborg.get_observation('Blue')}
+                        
+                        state_snapshot = self.game_state_manager.create_state_snapshot(actions, observations)
 
                         # game manager store state
                         self.game_state_manager.store_state(state_snapshot, i, j)
