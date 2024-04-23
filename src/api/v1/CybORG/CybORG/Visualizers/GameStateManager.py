@@ -38,7 +38,11 @@ class GameStateManager:
         self._create_ip_host_maps()
         
     def _create_ip_host_maps(self):
-        self.ip_map = dict(map(lambda item: (str(item[0]), item[1]), self.cyborg.environment_controller.state.ip_addresses.items()))
+        self.ip_map = self.cyborg.get_ip_map()
+        self.cidr_map = {lan_name: str(ip) for lan_name, ip in self.cyborg.get_cidr_map().items()}
+        self.cidr_to_host_map = {str(ip): lan_name for lan_name, ip in self.cyborg.get_cidr_map().items()}
+        self.cyborg_ip_to_host_map = {str(ip): host for host, ip in self.ip_map.items()}
+        self.cyborg_host_to_ip_map = {host: str(ip) for host, ip in self.ip_map.items()}
         self.host_map = {host: str(ip) for ip, host in self.ip_map.items()}
 
     def _get_true_state(self):
@@ -49,31 +53,36 @@ class GameStateManager:
         return true_obs_to_table(self.true_state, self.cyborg)
 
     def _get_host_info(self, node):
-        if '_router' in node:
-            return ""
+        # if '_router' in node:
+        #     return ""
 
-        hover_text = ""
+        # hover_text = ""
 
-        true_obs = self._get_true_state()
-        node_info = true_obs[node]
+        # true_obs = self._get_true_state()
+        # node_info = true_obs[node]
 
-        hover_text += "System info:<br>"
-        system_info = node_info.get('System info', {})
-        os_info = f"{system_info.get('OSType', '').name} " \
-          f"{system_info.get('OSDistribution', '').name} " \
-          f"({system_info.get('Architecture', '').name})"
+        # hover_text += "System info:<br>"
+        # system_info = node_info.get('System info', {})
+        # os_info = f"{system_info.get('OSType', '').name} " \
+        #   f"{system_info.get('OSDistribution', '').name} " \
+        #   f"({system_info.get('Architecture', '').name})"
 
-        hover_text += os_info + "<br><br>"
+        # hover_text += os_info + "<br><br>"
 
-        hover_text += "Processes info:<br>"
+        # hover_text += "Processes info:<br>"
         
-        processes = node_info.get('Processes', [])
-        for proc in processes:
-            process_name = proc.get('Process Name', 'N/A')
-            pid = proc.get('PID', 'N/A')
-            username = proc.get('Username', 'N/A')
-            port_info = ', '.join([f"Port: {conn['local_port']}" for conn in proc.get('Connections', [])])
-            hover_text+=f"- {process_name} (PID: {pid}, User: {username}, {port_info})<br>"
+        # processes = node_info.get('Processes', [])
+        # for proc in processes:
+        #     process_name = proc.get('Process Name', 'N/A')
+        #     pid = proc.get('PID', 'N/A')
+        #     username = proc.get('Username', 'N/A')
+        #     port_info = ', '.join([f"Port: {conn['local_port']}" for conn in proc.get('Connections', [])])
+        #     hover_text+=f"- {process_name} (PID: {pid}, User: {username}, {port_info})<br>"
+        
+        if '_router' in node:
+            return f"Subnet: {self.cidr_map[node]}"
+
+        hover_text = f"IP Address: {self.cyborg_host_to_ip_map[node]}"
 
         return hover_text
         
@@ -114,7 +123,10 @@ class GameStateManager:
             target_host = action_str_split[-1] if n > 1 else target_host
             # Update target host if it's an IP address to get the hostname
             print(target_host)
-            target_host = ip_map.get(target_host, target_host) if target_host in ip_map else target_host
+            if target_host in ip_map:
+                target_host = ip_map.get(target_host, target_host) 
+            elif target_host in self.cidr_to_host_map:
+                target_host = self.cidr_to_host_map.get(target_host, target_host) 
         return target_host, action_type
 
     def _update_host_status(self, cyborg, action_str, host_map, ip_map, host_type='Red'):
@@ -130,6 +142,7 @@ class GameStateManager:
                 elif 'PrivilegeEscalate' in action_type or 'Impact' in action_type:
                     escalated_host = target_host
                 elif 'DiscoverRemoteSystems' in action_type:
+                    #@ To-Do code smells
                     _cidr = ".".join(target_host.split(".")[:3])
                     for ip in ip_map:
                         if _cidr in ip and 'router' in ip_map[ip]:
@@ -170,9 +183,15 @@ class GameStateManager:
 
     def _create_action_snapshot(self, action_str, host_type):
         link_diagram = self.cyborg.environment_controller.state.link_diagram
-        
+
+        target_host, action_type = self._parse_action(self.cyborg, action_str, host_type, self.host_map, self.ip_map)
+        # @To-Do: handles string in a very ad-hoc manner 
+        if action_type == "Monitor":
+            target_host = "the whole network"
+            
+        decription = f"At Host User0 do {action_type} on {target_host}" if host_type == "Red" else f"At Host Defender do {action_type} on {target_host}"
         action_info = {
-            "action": action_str, 
+            "action": decription, 
             "success": self.cyborg.get_observation(host_type)['success'].__str__()
         }
         
