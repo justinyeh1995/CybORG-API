@@ -80,7 +80,7 @@ class GameStateManager:
         #     hover_text+=f"- {process_name} (PID: {pid}, User: {username}, {port_info})<br>"
         
         if '_router' in node:
-            return f"Subnet: {self.cidr_map[node]}"
+            return f"Subnet: {self.cidr_map[node.split("_")[0]]}"
 
         hover_text = f"IP Address: {self.cyborg_host_to_ip_map[node]}"
 
@@ -252,11 +252,13 @@ class GameStateManager:
         ############
         state_snapshot = {}
 
+        if self.environment == 'sim':
                     
-        for type in ['Blue', 'Red']:
-            action_str = self.cyborg.get_last_action(type).__str__()
-            state_snapshot[type] = self._create_action_snapshot(action_str, type)
+            for type in ['Blue', 'Red']:
+                action_str = self.cyborg.get_last_action(type).__str__()
+                state_snapshot[type] = self._create_action_snapshot(action_str, type)
 
+        #elif self.environment == 'emu':
             
         return state_snapshot
 
