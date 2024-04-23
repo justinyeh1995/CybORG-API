@@ -252,12 +252,10 @@ class GameStateManager:
         ## fo viz ##
         ############
         state_snapshot = {}
-
-        if self.environment == 'sim':
                     
-            for type in ['Blue', 'Red']:
-                action_str = self.cyborg.get_last_action(type).__str__()
-                state_snapshot[type] = self._create_action_snapshot(action_str, type)
+        for type in ['Blue', 'Red']:
+            action_str = self.cyborg.get_last_action(type).__str__()
+            state_snapshot[type] = self._create_action_snapshot(action_str, type)
 
         #elif self.environment == 'emu':
             
