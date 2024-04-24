@@ -96,7 +96,7 @@ class GameStateCollector:
         if action_type == "Monitor":
             target_host = "the whole network"
             
-        decription = f"At Host User0 do {action_type} on {target_host}" if host_type == "Red" else f"At Host Defender do {action_type} on {target_host}"
+        decription = f"at Host User0 do {action_type} on {target_host}" if host_type == "Red" else f"At Host Defender do {action_type} on {target_host}"
         action_info = {
             "action": decription, 
             "success": isSuccess
