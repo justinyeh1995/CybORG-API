@@ -95,6 +95,9 @@ class GameStateCollector:
         # @To-Do: handles string in a very ad-hoc manner 
         if action_type == "Monitor":
             target_host = "the whole network"
+
+        if action_type == "Monitor":
+            target_host = "the whole network"
             
         decription = f"at Host User0 do {action_type} on {target_host}" if host_type == "Red" else f"at Host Defender do {action_type} on {target_host}"
         action_info = {
@@ -178,7 +181,7 @@ class GameStateCollector:
             if target_host in ip_map:
                 target_host = ip_map.get(target_host, target_host) 
             elif target_host in self.cidr_to_host_map:
-                target_host = self.cidr_to_host_map.get(target_host, target_host)
+                target_host = self.cidr_to_host_map.get(target_host, target_host)+"_router"
         return target_host, action_type, isSuccess
         
     def update_hosts(self, target_host, action_type, host_map, ip_map, host_type='Red'):
@@ -193,11 +196,7 @@ class GameStateCollector:
                 elif 'PrivilegeEscalate' in action_type or 'Impact' in action_type:
                     escalated_host = target_host
                 elif 'DiscoverRemoteSystems' in action_type:
-                    _cidr = ".".join(target_host.split(".")[:3])
-                    for ip in ip_map:
-                        if _cidr in ip and 'router' in ip_map[ip]:
-                            discovered_subnet = ip_map[ip]
-                            target_host = discovered_subnet
+                    discovered_subnet = target_host
                 elif 'DiscoverNetworkServices' in action_type:
                     discovered_system = target_host
                     
