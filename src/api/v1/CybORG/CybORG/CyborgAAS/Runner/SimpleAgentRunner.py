@@ -136,6 +136,10 @@ class SimpleAgentRunner:
         # Return the current state, rewards, actions, etc., as needed
         return state_snapshot
 
+    def get_step(self, num: int):
+        pass
+        
+    
     def run_all_steps(self):
         self.configure()
         for num_steps in [self.max_steps]:
