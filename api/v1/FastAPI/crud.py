@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from CybORG.FastAPI import models, schemas
+from api.v1.FastAPI import models, schemas
 
 def create_game_state(game_id: str, step: int, data: dict, db: Session):
     new_game_state = models.GameState(game_id=game_id, step=step, data=data)
