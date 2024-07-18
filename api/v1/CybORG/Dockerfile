@@ -1,6 +1,6 @@
 # Set Ubuntu and Python versions from pre-built images
 FROM ubuntu:22.10
-FROM python:3.7.9
+FROM python:3.10.0
 
 # Set working directory to /cage
 WORKDIR /cage
@@ -15,5 +15,5 @@ RUN pip install -e .
 # RUN pip install stable_baselines3
 
 # Run evaluation script
-ENTRYPOINT ["python", "/cage/CybORG/Evaluation/validation.py"]
+# ENTRYPOINT ["python", "/cage/CybORG/Evaluation/validation.py"]
 
