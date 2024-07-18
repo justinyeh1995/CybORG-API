@@ -8,11 +8,11 @@ import redis
 import uuid
 import json
 
-from CybORG.CyborgAAS.Runner.SimpleAgentRunner import SimpleAgentRunner
+from api.v1.CybORG.CybORG.CyborgAAS.Runner.SimpleAgentRunner import SimpleAgentRunner
 
 from sqlalchemy.orm import Session
-from CybORG.FastAPI import crud
-from CybORG.FastAPI.database import SessionLocal
+from FastAPI import crud
+from FastAPI.database import SessionLocal
 
 router = APIRouter()
 
@@ -105,7 +105,7 @@ async def end_game(game_id: str, db: Session = Depends(get_db)):
     deleted_count = crud.delete_game(game_id, db)
     r.delete(game_id)
 
-    if deleted_count:
+    if deleted_count and game_id in active_games:
         del active_games[game_id]
         return {"message": f"Game with ID {game_id} and {deleted_count} associated game states deleted successfully"}
     else:
