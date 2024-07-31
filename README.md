@@ -37,6 +37,7 @@ project-root/
 </details>
 
 <details>
+
 ## Directory Overview
 
 - `api-gateway/`: API Gateway service (Node.js)
