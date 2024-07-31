@@ -1,6 +1,8 @@
 ## Project Planningi for a potential polyglot microservice
 
+"""
 project-root/
+├── .github/
 │
 ├── api-gateway/
 │   ├── Dockerfile
@@ -33,4 +35,5 @@ project-root/
 ├── .gitignore
 ├── README.md
 └── .env (optional, for local development)
+"""
 
