@@ -1,34 +1,49 @@
+name: cyborg-api-backend
 version: '3'
 services:
   api:
     container_name: cyborg-api-container
+    image: cyborg-api:latest
     build: .
     entrypoint: npm run fastapi-dev
-    env_file:
-      - .env
     ports:
-      - '5555:5555'
+      - "5555:5555"
+    environment:
+      - POSTGRES_SERVER=postgres
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+    networks:
+      - cyborg-network
+    depends_on:
+      - redis
+      - postgres
 
   redis:
     image: redis
     container_name: redis-container
     ports:
       - "6379:6379"
+    networks:
+      - cyborg-network
 
   postgres:
     image: postgres
     container_name: postgres-container
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: cyborg_app
+    networks:
+      - cyborg-network
+
 volumes:
   postgres_data:
-# networks:
-#   default:
-#     external:
-#       name: cyborg-network
+
+networks:
+  cyborg-network:
