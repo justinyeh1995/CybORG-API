@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from typing import Dict
 
+import os
 import redis
 import uuid
 import json
@@ -22,9 +23,10 @@ def get_db() -> Session:
         yield db
     finally:
         db.close()
-
+        
+redis_server = os.getenv('REDIS_SERVER')
 # Redis connection # for persistent issue
-r = redis.Redis(host='localhost', port=6379, db=0)
+r = redis.Redis(host=redis_server, port=6379, db=0)
 
 # @To-Do: Better persistence support of an object needed in the future (run it as a subprocess, and store it in queue?)
 # Mapping of game_id to SimpleAgentRunner instances
