@@ -1,6 +1,6 @@
 # Set Ubuntu and Python versions from pre-built images
 FROM ubuntu:22.10
-FROM python:3.10.0
+FROM python:3.10
 
 # Set working directory to /cage
 WORKDIR /cage
