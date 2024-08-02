@@ -17,7 +17,7 @@ POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
 
 # Build the database URL
 SQLALCHEMY_DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
-SQLALCHEMY_DATABASE_URL = f"postgresql://postgres:postgres@postgres:5432/cyborg_app"
+# SQLALCHEMY_DATABASE_URL = f"postgresql://postgres:postgres@postgres:5432/cyborg_app"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
