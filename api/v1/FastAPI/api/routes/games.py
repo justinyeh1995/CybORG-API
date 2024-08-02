@@ -24,7 +24,7 @@ def get_db() -> Session:
     finally:
         db.close()
         
-redis_server = os.getenv('REDIS_SERVER')
+redis_server = os.getenv('REDIS_SERVER') | 'localhost'
 # Redis connection # for persistent issue
 r = redis.Redis(host=redis_server, port=6379, db=0)
 

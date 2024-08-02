@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
       "flask-dev": "FLASK_DEBUG=1 pip3 install -r requirements.txt && PYTHONPATH=./src/api/v1/CybORG python3 -m flask --app src/api/v1/CybORG/CybORG/Flask/flask_index run -p 5328",
-      "fastapi-dev":"PYTHONPATH=./api/v1/ uvicorn FastAPI.fastapi_index:app --reload --reload-exclude venv --port 5555",
+      "fastapi-dev":"PYTHONPATH=./api/v1/ uvicorn FastAPI.fastapi_index:app --host 0.0.0.0 --reload --reload-exclude venv --port 5555",
       "next-dev": "next dev -p 8081",
       "dev": "concurrently \"npm run next-dev\" \"npm run fastapi-dev\"",
       "build": "next build",
