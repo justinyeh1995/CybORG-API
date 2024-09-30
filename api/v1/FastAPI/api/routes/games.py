@@ -38,6 +38,20 @@ class GameConfig(BaseModel):
     wrapper: str = "simple"
     steps: int = 10
 
+@router.get("/")
+async def get_all_games(db: Session = Depends(get_db)):
+    """
+    Returns all games stored in the database
+    """
+    games = crud.get_all_games(db)
+    games_data = []
+    for game in games:
+        games_data.append({
+            "game_id": game.game_id,
+            "step": game.step,
+            "data": game.data
+        })
+    return {"games": games_data}
 
 @router.post("/start")
 async def start_game(request: Request, config: GameConfig):

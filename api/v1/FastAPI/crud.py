@@ -2,6 +2,9 @@ from sqlalchemy.orm import Session
 
 from api.v1.FastAPI import models, schemas
 
+def get_all_games(db: Session):
+    return db.query(models.GameState).all()
+
 def create_game_state(game_id: str, step: int, data: dict, db: Session):
     new_game_state = models.GameState(game_id=game_id, step=step, data=data)
     db.add(new_game_state)
