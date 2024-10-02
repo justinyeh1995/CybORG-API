@@ -7,6 +7,8 @@ services:
     env_file:
       - .env
     entrypoint: [bash, -c, "source ~/.nvm/nvm.sh && npm run fastapi-dev"]
+    volumes:
+      - .:/cage
     ports:
       - "5555:5555"
     environment:
@@ -18,6 +20,7 @@ services:
       - REDIS_SERVER=redis
     networks:
       - cyborg-network
+      - shared-network-dashboard-cyborg-api
     depends_on:
       - redis
       - postgres
@@ -47,3 +50,5 @@ volumes:
 
 networks:
   cyborg-network:
+  shared-network-dashboard-cyborg-api:
+    external: true  # Add this block
