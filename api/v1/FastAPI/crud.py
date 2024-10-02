@@ -53,6 +53,7 @@ def get_all_game_meta(db: Session):
                 "wrapper": config.wrapper,
                 "steps": config.steps
             },
+            "completed": state.step >= config.steps
             # "state_data": state.data
         })
     
