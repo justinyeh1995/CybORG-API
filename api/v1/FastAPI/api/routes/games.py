@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from fastapi import APIRouter, HTTPException, Request, Depends
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
@@ -14,9 +15,11 @@ from api.v1.CybORG.CybORG.CyborgAAS.Runner.SimpleAgentRunner import SimpleAgentR
 from sqlalchemy.orm import Session
 from FastAPI import crud
 from FastAPI.database import SessionLocal
+from FastAPI.schemas import GameConfig
 
 router = APIRouter()
 
+# @contextmanager
 def get_db() -> Session:
     db = SessionLocal()
     try:
@@ -32,32 +35,27 @@ r = redis.Redis(host=redis_server, port=6379, db=0)
 # Mapping of game_id to SimpleAgentRunner instances
 active_games = {}
 
-class GameConfig(BaseModel):
-    red_agent: str = "B_lineAgent"
-    blue_agent: str = "BlueReactRemoveAgent"
-    wrapper: str = "simple"
-    steps: int = 10
-
 @router.get("/")
 async def get_all_games(db: Session = Depends(get_db)):
     """
     Returns all games stored in the database
     """
-    games = crud.get_all_games(db)
-    games_data = []
-    for game in games:
-        games_data.append({
-            "game_id": game.game_id,
-            "step": game.step,
-            "data": game.data
-        })
-    return {"games": games_data}
+    try:
+        games_data = crud.get_all_game_meta(db)
+        return {"games": games_data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/start")
-async def start_game(request: Request, config: GameConfig):
+async def start_game(request: Request, config: GameConfig, db: Session = Depends(get_db)):
+    """
     
+    """
     # Generate game_id and initialize state
     game_id = str(uuid.uuid4())
+    print(request.json())
+    
+    crud.start_new_game(game_id, config, db)
     
     runner = SimpleAgentRunner(config.steps, config.wrapper, config.red_agent, config.blue_agent)
     runner.configure()

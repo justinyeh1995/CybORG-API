@@ -8,3 +8,9 @@ class GameStateSchema(BaseModel):
 
     class Config:
         orm_mode = True
+
+class GameConfig(BaseModel):
+    red_agent: str = "B_lineAgent"
+    blue_agent: str = "BlueReactRemoveAgent"
+    wrapper: str = "simple"
+    steps: int = 10
