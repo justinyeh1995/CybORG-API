@@ -11,10 +11,59 @@ def start_new_game(game_id: str, game_config: GameConfig, db: Session):
     db.add(new_game_config)
     db.commit()
     db.refresh(new_game_config)
+    # this is not working properly cause game.py active_games objects would not be updated
+    # how can we solve this problem?
+    create_game_state(game_id, 0, {}, db)
     return new_game_config
 
 def get_all_games(db: Session):
     return db.query(models.GameState).all()
+
+def get_all_game_meta_with_auth(db: Session, user_id: str):
+
+    # Subquery to get the latest step for each game
+    latest_step_subquery = (
+        db.query(
+            models.GameState.game_id,
+            func.max(models.GameState.step).label('max_step')
+        )
+        .join(models.GameConfiguration, models.GameState.game_id == models.GameConfiguration.game_id)
+        .filter(models.GameConfiguration.user_id == user_id)  # Filter by user_id
+        .group_by(models.GameState.game_id)
+        .subquery()
+    )
+
+    # Main query
+    query = (
+        db.query(models.GameConfiguration, models.GameState)
+        .join(models.GameState,models.GameConfiguration.game_id == models.GameState.game_id)
+        .join(
+            latest_step_subquery,
+            (models.GameState.game_id == latest_step_subquery.c.game_id) &
+            (models.GameState.step == latest_step_subquery.c.max_step)
+        )
+        .filter(models.GameConfiguration.user_id == user_id)  # Filter by user_id
+    )
+
+    results = query.all()
+    
+    # Process the results
+    game_data = []
+    for config, state in results:
+        game_data.append({
+            "game_id": config.game_id,
+            "step": state.step,
+            "config": {
+                "red_agent": config.red_agent,
+                "blue_agent": config.blue_agent,
+                "wrapper": config.wrapper,
+                "steps": config.steps
+            },
+            "completed": state.step >= config.steps
+            # "state_data": state.data
+        })
+    
+    return game_data
 
 def get_all_game_meta(db: Session):
 
