@@ -1,5 +1,17 @@
-from contextlib import contextmanager
-from fastapi import APIRouter, HTTPException, Request, Depends
+from api.v1.FastAPI.api.utils.connection_manager import WebSocketConnectionManager
+from fastapi import (
+    APIRouter,
+    Cookie,
+    Depends,
+    Request,
+    FastAPI,
+    Query,
+    WebSocket,
+    WebSocketException,
+    WebSocketDisconnect,
+    HTTPException,
+    status
+)
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
@@ -9,6 +21,8 @@ import os
 import redis
 import uuid
 import json
+import asyncio
+import multiprocessing
 
 from api.v1.CybORG.CybORG.CyborgAAS.Runner.SimpleAgentRunner import SimpleAgentRunner
 
@@ -19,7 +33,6 @@ from FastAPI.schemas import GameConfig
 
 router = APIRouter()
 
-# @contextmanager
 def get_db() -> Session:
     db = SessionLocal()
     try:
@@ -35,6 +48,33 @@ r = redis.Redis(host=redis_server, port=6379, db=0)
 # Mapping of game_id to SimpleAgentRunner instances
 active_games = {}
 
+websocket_connection_manager = WebSocketConnectionManager()
+
+@router.websocket("/ws/{game_id}")
+async def websocket_endpoint(websocket: WebSocket, game_id: str):
+    await websocket.accept()
+    websocket_connection_manager.connect(websocket, game_id) 
+
+    try:
+        # Keep the connection open
+        while True:
+            # Optionally receive messages from client if needed
+            data = await websocket.receive_text()
+            # Handle client messages
+            print(f"Received data from client: {data}")
+            
+            # Process the message
+            #...
+
+            # Send message back to client
+            await websocket.send_text(f"Processed data: {data}\r\n")
+            
+    except WebSocketDisconnect:
+        # Handle client disconnect
+        websocket_connection_manager.disconnect(websocket, game_id)
+        # Optionally terminate the game
+        # end_game(game_id)
+
 @router.get("/")
 async def get_all_games(db: Session = Depends(get_db)):
     """
@@ -49,7 +89,7 @@ async def get_all_games(db: Session = Depends(get_db)):
 @router.post("/start")
 async def start_game(request: Request, config: GameConfig, db: Session = Depends(get_db)):
     """
-    
+    Create a new game 
     """
     # Generate game_id and initialize state
     game_id = str(uuid.uuid4())
@@ -118,9 +158,10 @@ async def get_step_state(game_id: str, step: int, db: Session = Depends(get_db))
 async def end_game(game_id: str, db: Session = Depends(get_db)):
     deleted_count = crud.delete_game(game_id, db)
     r.delete(game_id)
-
-    if deleted_count and game_id in active_games:
+    if game_id in active_games:
         del active_games[game_id]
+        
+    if deleted_count:
         return {"message": f"Game with ID {game_id} and {deleted_count} associated game states deleted successfully"}
     else:
         raise HTTPException(status_code=404, detail="Game not found")
