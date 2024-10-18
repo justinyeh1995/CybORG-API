@@ -197,7 +197,7 @@ if __name__ == '__main__':
     
     try:
         while runner.current_step < runner.max_steps:
-            logger.info("Waiting for message on Redis channel...")
+            # logger.info("Waiting for message on Redis channel...")
             message = pubsub.get_message(timeout=1.0)
             if message and message.get('type') == 'message':
                 logger.info(f"Received message: {message}")
