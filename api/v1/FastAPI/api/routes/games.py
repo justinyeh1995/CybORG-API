@@ -264,3 +264,19 @@ async def websocket_endpoint(websocket: WebSocket, game_id: str):
     except Exception as e:
         await websocket.send_text(f"Error: {str(e)}")
         await websocket.close()
+
+@router.on_event("startup")
+async def startup_event():
+    await initialize_active_games()
+
+async def initialize_active_games():
+    keys = await redis_client.keys('game:*')
+    for key in keys:
+        game_info = await redis_client.hgetall(key)
+        game_id = key.split(":")[1]
+        runner_proc_pid = int(game_info.get('runner_proc_pid', 0))
+        # Reconstruct active_runner_procs
+        if psutil.pid_exists(runner_proc_pid):
+            # Note: You may need to adjust how you reconstruct the subprocess
+            runner_proc = psutil.Process(runner_proc_pid)
+            active_runner_procs[game_id] = runner_proc
