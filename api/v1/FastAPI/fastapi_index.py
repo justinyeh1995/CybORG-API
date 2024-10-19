@@ -31,7 +31,7 @@ app.include_router(api_router, prefix="/api")
 # Will be deprecated soon
 @app.get("/", response_class=HTMLResponse)
 def read_root():
-    print("Hello FastAPI")
+    print("Hello FastAPI that serves you the game of CybORG!")
     return """
-            "Hello FastAPI"
+            "Hello FastAPI that serves you the game of CybORG!"
             """
