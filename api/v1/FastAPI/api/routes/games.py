@@ -145,6 +145,10 @@ async def start_game(config: GameConfig, db: Session = Depends(get_db)):
 
 @router.get("/{game_id}")
 async def get_game_status(game_id: str, db: Session = Depends(get_db)):
+    """
+    Returns the game status for the given game_id
+    it returns gameConfig model
+    """
     game_config = crud.get_game_config(game_id, db)
     if game_config:
         return game_config
@@ -195,43 +199,39 @@ async def run_next_step(game_id: str, db: Session = Depends(get_db)):
 
     return state_snapshot
 
-@router.get("/{game_id}/step/{step}")
-async def get_step_state(game_id: str, step: int, db: Session = Depends(get_db)):
-    game_state = crud.get_game_state(game_id, step, db)
-    if game_state:
-        return game_state.data
-    else:
-        raise HTTPException(status_code=404, detail="Game state not found")
-
 @router.delete("/{game_id}")
 async def end_game(game_id: str, db: Session = Depends(get_db)):
+    """
+    Delete a game and associated game states from the database and Redis cache
+    """
     # Retrieve game info from Redis
     game_info = await redis_client.hgetall(f"game:{game_id}")
-    if not game_info:
-        raise HTTPException(status_code=404, detail="Game not found or expired")
+    if game_info:
 
-    runner_proc_pid = int(game_info.get('runner_proc_pid', 0))
+      runner_proc_pid = int(game_info.get('runner_proc_pid', 0))
 
-    if runner_proc_pid:
-        try:
-            # Terminate the process group
-            os.killpg(os.getpgid(runner_proc_pid), signal.SIGTERM)
-        except ProcessLookupError:
-            # Process or process group does not exist
-            pass
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Error terminating runner process: {str(e)}")
+      if runner_proc_pid:
+          try:
+              # Terminate the process group
+              os.killpg(os.getpgid(runner_proc_pid), signal.SIGTERM)
+              # Wait for the child process to prevent it from becoming a zombie
+              os.waitpid(runner_proc_pid, 0)
+          except ProcessLookupError:
+              # Process or process group does not exist
+              pass
+          except Exception as e:
+              raise HTTPException(status_code=500, detail=f"Error terminating runner process: {str(e)}")
 
-    # Cancel associated tasks
-    tasks = runner_proc_tasks.pop(game_id, [])
-    for task in tasks:
-        task.cancel()
+      # Cancel associated tasks
+      tasks = runner_proc_tasks.pop(game_id, [])
+      for task in tasks:
+          task.cancel()
 
-    # Remove from active_runner_procs
-    active_runner_procs.pop(game_id, None)
+      # Remove from active_runner_procs
+      active_runner_procs.pop(game_id, None)
 
-    # Remove from Redis
-    await redis_client.delete(f"game:{game_id}")
+      # Remove from Redis
+      await redis_client.delete(f"game:{game_id}")
 
     # Delete game from database
     deleted_count = crud.delete_game(game_id, db)
@@ -240,8 +240,22 @@ async def end_game(game_id: str, db: Session = Depends(get_db)):
 
     return {"message": f"Game with ID {game_id} and {deleted_count} associated game states deleted successfully"}
 
+@router.get("/{game_id}/step/{step}")
+async def get_step_state(game_id: str, step: int, db: Session = Depends(get_db)):
+    """
+    Returns the state of the game at the given step
+    """
+    game_state = crud.get_game_state(game_id, step, db)
+    if game_state:
+        return game_state.data
+    else:
+        raise HTTPException(status_code=404, detail="Game state not found")
+
 @router.websocket("/ws/{game_id}")
 async def websocket_endpoint(websocket: WebSocket, game_id: str):
+    """
+    Websocket endpoint to stream stdout and stderr of the game
+    """
     await websocket.accept()
     websocket_connection_manager.connect(websocket, game_id)
 
@@ -267,16 +281,45 @@ async def websocket_endpoint(websocket: WebSocket, game_id: str):
 
 @router.on_event("startup")
 async def startup_event():
+    """
+    Initialize active game runner processes and tasks
+     - Fetch all game IDs from Redis
+     - Check if their runner processes are still running
+     - If so, reconstruct the subprocess and (tasks to read stdout and stderr is not supported)
+     """
     await initialize_active_games()
 
 async def initialize_active_games():
     keys = await redis_client.keys('game:*')
     for key in keys:
-        game_info = await redis_client.hgetall(key)
-        game_id = key.split(":")[1]
-        runner_proc_pid = int(game_info.get('runner_proc_pid', 0))
-        # Reconstruct active_runner_procs
-        if psutil.pid_exists(runner_proc_pid):
-            # Note: You may need to adjust how you reconstruct the subprocess
-            runner_proc = psutil.Process(runner_proc_pid)
-            active_runner_procs[game_id] = runner_proc
+        # Check if the key is of type 'hash'
+        key_type = await redis_client.type(key)
+        if key_type == 'hash':
+            game_info = await redis_client.hgetall(key)
+            game_id = key.split(":")[1]
+            runner_proc_pid = int(game_info.get('runner_proc_pid', 0))
+            # Reconstruct active_runner_procs
+            if psutil.pid_exists(runner_proc_pid):
+                # Note: You may need to adjust how you reconstruct the subprocess
+                runner_proc = psutil.Process(runner_proc_pid)
+                active_runner_procs[game_id] = runner_proc
+
+@router.on_event("shutdown")
+async def shutdown_event():
+    # Retrieve all active games
+    keys = await redis_client.keys('game:*')
+    for key in keys:
+        # Check if the key is of type 'hash'
+        key_type = await redis_client.type(key)
+        if key_type == 'hash':
+            game_info = await redis_client.hgetall(key)
+            game_id = key.split(":")[1]
+            runner_proc_pid = int(game_info.get('runner_proc_pid', 0))
+            if runner_proc_pid:
+                try:
+                    os.kill(runner_proc_pid, signal.SIGTERM)
+                    os.waitpid(runner_proc_pid, 0)
+                except OSError:
+                    pass
+            # Optionally, delete the game key
+            await redis_client.delete(game_id)
