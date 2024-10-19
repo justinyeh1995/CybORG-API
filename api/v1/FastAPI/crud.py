@@ -118,6 +118,9 @@ def create_game_state(game_id: str, step: int, data: dict, db: Session):
 def get_game_state(game_id: str, step: int, db: Session):
     return db.query(models.GameState).filter(models.GameState.game_id == game_id, models.GameState.step == step).first()
 
+def get_game_config(game_id: str, db: Session):
+    return db.query(models.GameConfiguration).filter(models.GameConfiguration.game_id == game_id).first()
+
 def delete_game(game_id: str, db: Session):
     # Delete all GameState records associated with the game_id
     deleted_count = db.query(models.GameState).filter(models.GameState.game_id == game_id).delete()
