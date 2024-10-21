@@ -31,7 +31,7 @@ def get_host_info(node: str, true_obs: dict) -> str:
     return hover_text
 
 def get_node_color(node: str, discovered_subnets: set, discovered_systems: set, escalated_hosts: set, exploited_hosts: set) -> str:
-    color = "green"
+    color = "white"
     
     if 'router' in node:
         if node in discovered_subnets:
