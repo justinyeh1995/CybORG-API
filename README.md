@@ -52,3 +52,5 @@ project-root/
 </details>
 
 
+![cyborg-api drawio](https://github.com/user-attachments/assets/c899293f-fcce-46f2-b9b5-dcff27c48bdc)
+
