@@ -51,6 +51,4 @@ project-root/
 - `.env`: Environment variables for local development (not tracked in git)
 </details>
 
-
-![cyborg-api drawio](https://github.com/user-attachments/assets/c899293f-fcce-46f2-b9b5-dcff27c48bdc)
-
+![cyborg-api drawio](https://github.com/user-attachments/assets/409294b4-673b-4fb9-96c8-1110fc86d8f0)
