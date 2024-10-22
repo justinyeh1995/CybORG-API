@@ -85,8 +85,6 @@ async def start_game(config: GameConfig, db: Session = Depends(get_db)):
         # Generate game_id and initialize state
         game_id = str(uuid.uuid4())
 
-        crud.start_new_game(game_id, config, db)
-
         print(f"AgentRunner.py Path: {agent_runner_abs_path}")
 
         # Start the subprocess using asyncio
@@ -138,6 +136,10 @@ async def start_game(config: GameConfig, db: Session = Depends(get_db)):
         active_runner_procs[game_id] = runner_proc
         runner_proc_tasks[game_id] = [task_stdout, task_stderr]
 
+        # store it in the database
+        crud.start_new_game(game_id, config, db)
+        print(f"Game started with ID: {game_id}")
+        
         return {"game_id": game_id}
 
     except Exception as e:
@@ -190,14 +192,14 @@ async def run_next_step(game_id: str, db: Session = Depends(get_db)):
     data = json.loads(state_data)
     state_snapshot = data.get("state_snapshot")
     current_step = data.get("current_step")
-
-    if not state_snapshot:
-        return {"Status": "End of Game"}
-
+    completed = data.get("completed")
     # Store in DB
     crud.create_game_state(game_id, current_step, state_snapshot, db)
 
-    return state_snapshot
+    return {
+        "StateSnapshot": state_snapshot,
+        "Completed": completed
+    }
 
 @router.delete("/{game_id}")
 async def end_game(game_id: str, db: Session = Depends(get_db)):

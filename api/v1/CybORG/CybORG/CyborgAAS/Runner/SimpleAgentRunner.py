@@ -204,7 +204,8 @@ if __name__ == '__main__':
                 state_snapshot = runner.run_next_step()
                 data = { 
                     'state_snapshot': state_snapshot,
-                    'current_step': runner.current_step
+                    'current_step': runner.current_step,
+                    'completed': runner.current_step >= runner.max_steps
                 }
                 # Push the state_snapshot onto a Redis list
                 redis_client.rpush(f'game:{args.game_id}:states', json.dumps(data))
