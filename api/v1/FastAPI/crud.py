@@ -124,5 +124,6 @@ def get_game_config(game_id: str, db: Session):
 def delete_game(game_id: str, db: Session):
     # Delete all GameState records associated with the game_id
     deleted_count = db.query(models.GameState).filter(models.GameState.game_id == game_id).delete()
+    delete_game_config_count = db.query(models.GameConfiguration).filter(models.GameConfiguration.game_id == game_id).delete()
     db.commit()
     return deleted_count
