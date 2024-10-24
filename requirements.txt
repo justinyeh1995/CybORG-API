@@ -28,3 +28,7 @@ uvicorn[standard]
 sqlalchemy
 psycopg2-binary
 python-dotenv
+pyjwt
+passlib[bcrypt]
+alembic
+pydantic_settings
