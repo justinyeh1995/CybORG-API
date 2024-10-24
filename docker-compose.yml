@@ -4,8 +4,7 @@ services:
     container_name: cyborg-api-container
     image: cyborg-api:latest
     build: .
-    env_file:
-      - .env
+    env_file: ".env"
     entrypoint: [bash, -c, "source ~/.nvm/nvm.sh && npm run fastapi-dev"]
     volumes:
       - .:/cage
@@ -18,6 +17,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=${POSTGRES_DB}
       - REDIS_SERVER=redis
+      # - JWT_SECRET=${JWT_SECRET}
     networks:
       - cyborg-network
       - shared-network-dashboard-cyborg-api
