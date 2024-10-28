@@ -21,8 +21,9 @@ SQLALCHEMY_DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{PO
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine) # The ORM’s “handle” to the database is the Session.
 
-Base = declarative_base()
+Base = declarative_base() # all our models are inherited from this class 
+# A class using Declarative at a minimum needs a __tablename__ attribute, and at least one Column which is part of a primary key 
 
     
