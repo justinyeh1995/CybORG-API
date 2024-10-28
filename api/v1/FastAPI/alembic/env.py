@@ -7,11 +7,11 @@ from sqlalchemy import pool
 
 from alembic import context
 
-# Determine the project base directory
-project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+# # Determine the project base directory
+# project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
-# Add the project directory to sys.path
-sys.path.insert(0, project_dir)
+# # Add the project directory to sys.path
+# sys.path.insert(0, project_dir)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
