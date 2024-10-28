@@ -160,13 +160,14 @@ def delete_game(game_id: str, db: Session):
     # db.flush() @to-do flush vs update vs refresh
     return deleted_count
 
+#@To-do write test for crud, why? we make a typo in game_state.step but we have to manually change it to game_state.steps
 def update_step_game_summary(game_id: str, step: int, db: Session):
     """
     Update the step number of the game state
     """
     game_state = db.query(models.GameSummary).filter(models.GameSummary.game_id == game_id).first()
     if game_state:
-        game_state.step = step
+        game_state.steps = step
         db.commit()
         db.refresh(game_state)
     else:
