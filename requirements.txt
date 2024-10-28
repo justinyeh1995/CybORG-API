@@ -31,4 +31,5 @@ python-dotenv
 pyjwt
 passlib[bcrypt]
 alembic
+pydantic[email]
 pydantic_settings
