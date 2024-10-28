@@ -1,4 +1,5 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, Float, String, JSON
+import datetime
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, Float, String, JSON
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -20,6 +21,7 @@ class GameConfiguration(Base):
     blue_agent = Column(String)
     wrapper = Column(String)
     steps = Column(Integer)
+    createdAt = Column(DateTime, default=datetime.datetime.now())
 
     # Relationship to GameState
     states = relationship("GameState", back_populates="configuration")
