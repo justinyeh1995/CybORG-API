@@ -1,0 +1,54 @@
+name: cyborg-api-backend
+services:
+  api:
+    container_name: cyborg-api-container
+    image: cyborg-api:latest
+    build: .
+    env_file: ".env"
+    entrypoint: [bash, -c, "source ~/.nvm/nvm.sh && npm run fastapi-dev"]
+    volumes:
+      - .:/cage
+    ports:
+      - "5555:5555"
+    environment:
+      - POSTGRES_SERVER=postgres-container
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - REDIS_SERVER=redis
+      # - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - cyborg-network
+      - shared-network-dashboard-cyborg-api
+    depends_on:
+      - redis
+      - postgres
+
+  redis:
+    image: redis
+    container_name: redis-container
+    networks:
+      - cyborg-network
+
+  postgres:
+    image: postgres:16
+    container_name: postgres-container
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - cyborg-network
+
+volumes:
+  postgres_data:
+
+networks:
+  cyborg-network:
+  shared-network-dashboard-cyborg-api:
+    external: true  # Add this block
