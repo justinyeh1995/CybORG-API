@@ -1,11 +1,15 @@
 import datetime
+import uuid
+from typing import List
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, Float, String, JSON
+from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import relationship
 
 from .database import Base
 
 class GameState(Base):
     __tablename__ = "game_states"
+    
     game_id = Column(String, ForeignKey('game_configurations.game_id'), primary_key=True)
     step = Column(Integer, primary_key=True)
     data = Column(JSON)
@@ -15,6 +19,7 @@ class GameState(Base):
 
 class GameConfiguration(Base):
     __tablename__ = "game_configurations"
+    
     game_id = Column(String, primary_key=True)
     user_id = Column(String, ForeignKey('users.user_id'), default="anonymous")
     red_agent = Column(String)
@@ -32,6 +37,7 @@ class GameConfiguration(Base):
 
 class GameSummary(Base):
     __tablename__ = "game_summary"
+    
     game_id = Column(String, ForeignKey('game_configurations.game_id'), primary_key=True)
     completed = Column(Boolean, default=False)
     steps = Column(Integer, default=0)
@@ -42,11 +48,15 @@ class GameSummary(Base):
 
 class User(Base):
     __tablename__ = "users"
-    user_id = Column(String, primary_key=True)
-    username = Column(String)
+
+    user_id: uuid.UUID = Column(String, primary_key=True)
+    full_name = Column(String)
     email = Column(String)
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
+    is_superuser = Column(Boolean, default=False)
 
     # Relationship to GameConfiguration
-    configurations = relationship("GameConfiguration", back_populates="user")
+    configurations = relationship("GameConfiguration", back_populates="user", cascade="all, delete")
+    
+    

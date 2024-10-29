@@ -24,7 +24,7 @@ import asyncio
 from sqlalchemy.orm import Session
 from api.v1.FastAPI.api.utils.connection_manager import WebSocketConnectionManager
 from FastAPI import crud
-from FastAPI.database import SessionLocal
+from FastAPI.api.deps import SessionDep
 from FastAPI.schemas import GameConfig, GameConfigSummarySchema, GameConfigurationSchema, GameSummarySchema
 import logging
 import inspect
@@ -35,13 +35,6 @@ agent_runner_file_path = inspect.getfile(api.v1.CybORG.CybORG.CyborgAAS.Runner.S
 agent_runner_abs_path = os.path.abspath(agent_runner_file_path)
 
 router = APIRouter()
-
-def get_db() -> Session:
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 # Initialize Redis client
 redis_server = os.getenv('REDIS_SERVER', 'localhost')
@@ -65,8 +58,8 @@ async def subscribe_to_channel(channel: str) -> AsyncGenerator[str, None]:
         await pubsub.unsubscribe(channel)
         await pubsub.close()
 
-@router.get("/", tags=["game"])
-async def get_all_games(db: Session = Depends(get_db)):
+@router.get("/", response_model=None, tags=["game"])
+async def get_all_games(db: SessionDep):
     """
     Returns all games stored in the database
     """
@@ -76,8 +69,8 @@ async def get_all_games(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/start", tags=["game"])
-async def start_game(config: GameConfig, db: Session = Depends(get_db)):
+@router.post("/start", response_model=None, tags=["game"])
+async def start_game(config: GameConfig, db: SessionDep):
     """
     Create a new game
     """
@@ -146,7 +139,7 @@ async def start_game(config: GameConfig, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{game_id}", response_model=GameConfigSummarySchema, tags=["game"])
-async def get_game_status(game_id: str, db: Session = Depends(get_db)):
+async def get_game_status(game_id: str, db: SessionDep):
     """
     Returns the game status for the given game_id
     it returns gameConfig model
@@ -162,8 +155,8 @@ async def get_game_status(game_id: str, db: Session = Depends(get_db)):
     )
     
 
-@router.post("/{game_id}", tags=["game"])
-async def run_next_step(game_id: str, db: Session = Depends(get_db)):
+@router.post("/{game_id}", response_model=None, tags=["game"])
+async def run_next_step(game_id: str, db: SessionDep):
     """
     Run the next step in the game and return the game state.
     No body for this request
@@ -212,8 +205,8 @@ async def run_next_step(game_id: str, db: Session = Depends(get_db)):
         "Completed": completed
     }
 
-@router.delete("/{game_id}", tags=["game"])
-async def end_game(game_id: str, db: Session = Depends(get_db)):
+@router.delete("/{game_id}", response_model=None, tags=["game"])
+async def end_game(game_id: str, db: SessionDep):
     """
     Delete a game and associated game states from the database and Redis cache
     """
@@ -256,8 +249,8 @@ async def end_game(game_id: str, db: Session = Depends(get_db)):
     
     return {"message": f"Game with ID {game_id} and {deleted_count} associated game states deleted successfully"}
 
-@router.get("/{game_id}/step/{step}", tags=["game"])
-async def get_step_state(game_id: str, step: int, db: Session = Depends(get_db)):
+@router.get("/{game_id}/step/{step}", response_model=None, tags=["game"])
+async def get_step_state(game_id: str, step: int, db: SessionDep):
     """
     Returns the state of the game at the given step
     """
@@ -295,7 +288,7 @@ async def websocket_endpoint(websocket: WebSocket, game_id: str):
         await websocket.send_text(f"Error: {str(e)}")
         await websocket.close()
 
-@router.get("/{game_id}/status/")
+@router.get("/{game_id}/status/", response_model=None, tags=["game"])
 async def get_game_status_websocket(game_id: str):
     """
     Returns the status of the game in a WebSocket-friendly format
@@ -316,7 +309,7 @@ async def get_game_status_websocket(game_id: str):
     return {"Status": "Running"}
 
 # @router.get("/{game_id}/stats/")
-# async def get_game_stats(game_id: str, db: Session = Depends(get_db)):
+# async def get_game_stats(game_id: str, db: Session = SessionDep):
 #     """
 #     Returns the statistics of the game
 #     """
