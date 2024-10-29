@@ -1,8 +1,9 @@
 from pydantic import BaseModel, ConfigDict, Field
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Union
 
 class Base(BaseModel):
     model_config = ConfigDict(from_attributes=True)
+    
 ###########################################################################################
 # These classes defines Pydanitc models for the API, different from the SQLAlchemy models #
 ###########################################################################################
@@ -51,4 +52,27 @@ class GameConfigSummarySchema(Base):
     
     class Config:
         orm_mode = True
-        
+       
+########
+# User #
+########
+
+class User(Base):
+    user_id: str
+    email: str
+    full_name: Union[str, None] = None
+    is_superuser: Union[bool, None] = False
+    is_active: Union[bool, None] = True
+    
+#######
+# JWT #
+#######
+
+# JSON payload containing access token
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    
+# Contents of JWT token
+class TokenPayload(BaseModel):
+    sub: str | None = None
