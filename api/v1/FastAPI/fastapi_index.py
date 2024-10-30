@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,11 +10,20 @@ from api.v1.FastAPI import models
 from api.v1.FastAPI.database import engine
 from api.v1.FastAPI.api.main import api_router
 
-# Create all tables
-models.Base.metadata.create_all(bind=engine)
+## https://fastapi.tiangolo.com/advanced/events/#async-context-manager
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Manage the life of the application.
+    """
+    # Create all tables
+    models.Base.metadata.create_all(bind=engine)
+    yield
+    # Drop all tables
+    models.Base.metadata.drop_all(bind=engine)
 
 # Start main app
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 # CORS
 origins = ["*"]
