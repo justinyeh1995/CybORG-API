@@ -22,9 +22,8 @@ from api.v1.FastAPI.api.core.config import settings
 
 from api.v1.FastAPI.schemas import User, TokenPayload
 
-router = APIRouter()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login/access-token")
 
 def get_db() -> Generator[Session, None, None]:
     db: Session = SessionLocal()
@@ -35,15 +34,6 @@ def get_db() -> Generator[Session, None, None]:
 
 SessionDep = Annotated[Session, Depends(get_db)]
 TokenDep = Annotated[str, Depends(oauth2_scheme)]
-
-def decode_token(token: str) -> User:
-    # Decode the JWT token and extract the user details
-    return User(
-        username="user",
-        email="user@example.com",
-        full_name="User",
-        is_admin=False
-        )
 
 async def get_current_user(token: str = TokenDep, db: Session = SessionDep):
     # Verify the JWT token using the token endpoint
@@ -65,7 +55,11 @@ async def get_current_user(token: str = TokenDep, db: Session = SessionDep):
         raise HTTPException(status_code=400, detail="Inactive user")
     return user
 
-@router.post("/token")
-async def login(username: str, password: str):
-    """Login Post"""
-    return {"access_token": "user.username", "token_type": "bearer"}
+CurrentUser = Annotated[User, Depends(get_current_user)]
+
+def get_current_active_superuser(current_user: CurrentUser) -> User:
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=403, detail="The user doesn't have enough privileges"
+        )
+    return current_user
