@@ -33,3 +33,5 @@ passlib[bcrypt]
 alembic
 pydantic[email]
 pydantic_settings
+httpx
+coverage
