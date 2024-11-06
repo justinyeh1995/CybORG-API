@@ -1,4 +1,5 @@
-from pydantic import BaseModel, ConfigDict, Field
+import uuid
+from pydantic import BaseModel, ConfigDict, Field, EmailStr
 from typing import Dict, Any, Optional, Union
 
 class Base(BaseModel):
@@ -57,10 +58,29 @@ class GameConfigSummarySchema(Base):
 # User #
 ########
 
+class UserRegister(Base):
+    """
+    Used in request body validation for user registration.
+    """
+    email: EmailStr = Field(max_length=255)
+    password: str = Field(min_length=8, max_length=40)
+    full_name: str | None = Field(default=None, max_length=255)
+
+class UserCreate(Base):
+    """
+    Used in request body validation for user creation.
+    """
+    email: EmailStr = Field(unique=True, index=True, max_length=255)
+    password: str = Field(min_length=8, max_length=40)
+    is_active: bool = True
+    is_superuser: bool = False
+    full_name: str | None = Field(default=None, max_length=255)
+
 class User(Base):
-    user_id: str
+    user_id: str = uuid.uuid4()
     email: str
     full_name: Union[str, None] = None
+    hashed_password: str
     is_superuser: Union[bool, None] = False
     is_active: Union[bool, None] = True
     
