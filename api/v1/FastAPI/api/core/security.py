@@ -4,7 +4,7 @@ from typing import Any, Union
 import jwt
 from passlib.context import CryptContext
 
-from FastAPI.api.core.config import settings
+from api.v1.FastAPI.api.core.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
