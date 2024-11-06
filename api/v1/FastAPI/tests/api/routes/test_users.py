@@ -20,17 +20,7 @@ POSTGRES_DB = "test_database"
 POSTGRES_USER = os.getenv("POSTGRES_USER")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
 
-# Build the database URL
 TEST_SQLALCHEMY_DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
-# SQLALCHEMY_DATABASE_URL = f"postgresql://postgres:postgres@postgres:5432/cyborg_app"
-
-@pytest.fixture
-def valid_user():
-    return {
-        "username": "testuser",
-        "password": "testpassword",
-        "email": "test@example.com",
-    }
 
 @pytest.fixture(name="db_session") # you can give a fixture a name so that it can be injected into the test
 def session_fixture():
@@ -42,6 +32,8 @@ def session_fixture():
         yield db_session
     finally:
         db_session.close()
+        Base.metadata.drop_all(bind=engine)
+
         
 @pytest.fixture(name="client")
 def client_fixture(db_session):
@@ -79,7 +71,5 @@ def test_create_user(client: TestClient, full_name, password, email, is_active, 
     assert data["is_active"] == is_active
     assert data["is_superuser"] == is_superuser
     assert "user_id" in data  # Ensure user_id is present
-
-    
-    
+ 
                            
