@@ -23,9 +23,9 @@ import json
 import asyncio
 from sqlalchemy.orm import Session
 from api.v1.FastAPI.api.utils.connection_manager import WebSocketConnectionManager
-from FastAPI import crud
-from FastAPI.api.deps import SessionDep
-from FastAPI.schemas import GameConfig, GameConfigSummarySchema, GameConfigurationSchema, GameSummarySchema
+from api.v1.FastAPI import crud
+from api.v1.FastAPI.api.deps import SessionDep
+from api.v1.FastAPI.schemas import GameConfig, GameConfigSummarySchema, GameConfigurationSchema, GameSummarySchema
 import logging
 import inspect
 import api.v1.CybORG.CybORG.CyborgAAS.Runner.SimpleAgentRunner
@@ -57,6 +57,8 @@ async def subscribe_to_channel(channel: str) -> AsyncGenerator[str, None]:
     finally:
         await pubsub.unsubscribe(channel)
         await pubsub.close()
+
+# TODO: fix the response model for all the endpoints
 
 @router.get("/", response_model=None, tags=["game"])
 async def get_all_games(db: SessionDep):
