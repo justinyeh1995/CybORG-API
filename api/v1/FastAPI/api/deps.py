@@ -13,7 +13,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jwt.exceptions import InvalidTokenError
 
 from api.v1.FastAPI.database import SessionLocal
-from api.v1.FastAPI import crud_user
+from api.v1.FastAPI.crud import crud_user
 
 from api.v1.FastAPI.api.core.security import get_password_hash, verify_password, create_access_token
  
