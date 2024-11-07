@@ -7,15 +7,20 @@ and pytest will automatically recognize and load fixtures defined in it.
 
 from typing import Generator
 import pytest
+from dotenv import load_dotenv
+import os
+
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import delete
+
 from fastapi.testclient import TestClient
+
 from api.v1.FastAPI.fastapi_index import app
 from api.v1.FastAPI.api.deps import get_db
 from api.v1.FastAPI.database import Base
-from dotenv import load_dotenv
-import os
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from api.v1.FastAPI.models import User
 
 # Load environment variables from .env file
 load_dotenv()
@@ -29,7 +34,7 @@ POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
 
 TEST_SQLALCHEMY_DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
-@pytest.fixture(name="db_session") # you can give a fixture a name so that it can be injected into the test
+@pytest.fixture(name="db_session", scope="session") # you can give a fixture a name so that it can be injected into the test
 def session_fixture():
     engine = create_engine(TEST_SQLALCHEMY_DATABASE_URL)
     Base.metadata.create_all(bind=engine)
@@ -38,11 +43,12 @@ def session_fixture():
         db_session: Session = TestSessionLocal() # TODO we have to use the test database instead
         yield db_session
     finally:
+        statement = delete(User)
+        db_session.execute(statement)
+        db_session.commit()
         db_session.close()
-        Base.metadata.drop_all(bind=engine)
-
         
-@pytest.fixture(name="client")
+@pytest.fixture(name="client", scope="module")
 def client_fixture(db_session):
     def override_get_db_session() -> Generator[Session, None, None]:
         yield db_session
