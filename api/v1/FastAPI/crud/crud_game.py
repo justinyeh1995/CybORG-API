@@ -92,7 +92,8 @@ def get_all_game_meta_with_auth(db: Session, user_id: str):
     return game_data
 
 def get_all_game_meta(db: Session):
-
+    # To-do: rewrite this function casue we have new models to work with
+    
     # Subquery to get the latest step for each game
     latest_step_subquery = (
         db.query(
