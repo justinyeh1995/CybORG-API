@@ -1,7 +1,8 @@
 import pytest
+from api.v1.FastAPI.crud import crud_user
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from api.v1.FastAPI import models, schemas, crud_user
+from api.v1.FastAPI import models, schemas
 from api.v1.FastAPI.api.core.config import settings
 
 """
