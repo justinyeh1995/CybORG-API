@@ -23,7 +23,7 @@ import json
 import asyncio
 from sqlalchemy.orm import Session
 from api.v1.FastAPI.api.utils.connection_manager import WebSocketConnectionManager
-from api.v1.FastAPI import crud
+from api.v1.FastAPI.crud import crud_game as crud
 from api.v1.FastAPI.api.deps import SessionDep
 from api.v1.FastAPI.schemas import GameConfig, GameConfigSummarySchema, GameConfigurationSchema, GameSummarySchema
 import logging

@@ -12,7 +12,7 @@ from jwt.exceptions import InvalidTokenError
 from api.v1.FastAPI.api.core.security import get_password_hash, verify_password, create_access_token
 
 from api.v1.FastAPI.schemas import User, UserCreate
-import api.v1.FastAPI.crud_user as crud
+import api.v1.FastAPI.crud.crud_user as crud
 
 from api.v1.FastAPI.api.deps import SessionDep
 
