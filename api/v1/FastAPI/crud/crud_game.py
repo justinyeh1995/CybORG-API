@@ -151,11 +151,7 @@ def get_game_config_summary(game_id: str, db: Session):
         .first()
 
 def delete_game(game_id: str, db: Session):
-    # Delete all GameState records associated with the game_id
-    # deleted_count = db.query(models.GameState).filter(models.GameState.game_id == game_id).delete()
-    # Delete the game_id from GameSummary records if it exists
-    # db.query(models.GameSummary).filter(models.GameSummary.game_id == game_id).delete()
-
+    # Delete game configuration associated with the game_id, it will cascade delete all states and summaries
     delete_game_config_count = db.query(models.GameConfiguration).filter(models.GameConfiguration.game_id == game_id).delete()
 
     # Commit the changes to the database and refresh the affected objects
