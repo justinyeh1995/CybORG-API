@@ -152,14 +152,16 @@ def get_game_config_summary(game_id: str, db: Session):
 
 def delete_game(game_id: str, db: Session):
     # Delete all GameState records associated with the game_id
-    deleted_count = db.query(models.GameState).filter(models.GameState.game_id == game_id).delete()
-    delete_game_config_count = db.query(models.GameConfiguration).filter(models.GameConfiguration.game_id == game_id).delete()
+    # deleted_count = db.query(models.GameState).filter(models.GameState.game_id == game_id).delete()
     # Delete the game_id from GameSummary records if it exists
-    db.query(models.GameSummary).filter(models.GameSummary.game_id == game_id).delete()
+    # db.query(models.GameSummary).filter(models.GameSummary.game_id == game_id).delete()
+
+    delete_game_config_count = db.query(models.GameConfiguration).filter(models.GameConfiguration.game_id == game_id).delete()
+
     # Commit the changes to the database and refresh the affected objects
     db.commit()
     # db.flush() @to-do flush vs update vs refresh
-    return deleted_count
+    return delete_game_config_count
 
 #@To-do write test for crud, why? we make a typo in game_state.step but we have to manually change it to game_state.steps
 def update_step_game_summary(game_id: str, step: int, db: Session):
