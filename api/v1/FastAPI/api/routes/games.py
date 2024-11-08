@@ -245,9 +245,6 @@ async def end_game(game_id: str, db: SessionDep):
     deleted_count = crud.delete_game(game_id, db)
     if not deleted_count:
         raise HTTPException(status_code=404, detail="Game not found")
-
-    # Mark as completed in game summary
-    crud.end_game(game_id, db)
     
     return {"message": f"Game with ID {game_id} and {deleted_count} associated game states deleted successfully"}
 
