@@ -20,7 +20,8 @@ from fastapi.testclient import TestClient
 from api.v1.FastAPI.fastapi_index import app
 from api.v1.FastAPI.api.deps import get_db
 from api.v1.FastAPI.database import Base
-from api.v1.FastAPI.models import User
+from api.v1.FastAPI.crud import crud_user
+from api.v1.FastAPI import schemas, models
 
 # Load environment variables from .env file
 load_dotenv()
@@ -43,9 +44,14 @@ def session_fixture():
         db_session: Session = TestSessionLocal() # TODO we have to use the test database instead
         yield db_session
     finally:
-        statement = delete(User)
+        statement = delete(models.User)
         db_session.execute(statement)
         db_session.commit()
+        
+        statement = delete(models.GameConfiguration)
+        db_session.execute(statement)
+        db_session.commit()
+        
         db_session.close()
         
 @pytest.fixture(name="client", scope="module")
@@ -57,3 +63,26 @@ def client_fixture(db_session):
     client = TestClient(app)
     yield client
     app.dependency_overrides.clear()
+
+@pytest.fixture(name="test_user", scope="session")
+def test_user(db_session: Session):
+    user_in = schemas.UserCreate(
+        full_name="test_user_login",
+        email="email@example.com",
+        password="password",
+        is_active=True,
+        is_superuser=False,
+    )
+    user = crud_user.create_user(db_session, user_in)
+    yield user
+    
+@pytest.fixture(name="test_user_jwt_token", scope="module")
+def normal_user_token_headers(client: TestClient, test_user: models.User):
+    r = client.post(
+        "/api/login/access-token",
+        data={"username": test_user.full_name, "password": "password"} # TODO: this is tight-coupuled here
+        )
+    response = r.json()
+    auth_token = response["access_token"]
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    yield headers
