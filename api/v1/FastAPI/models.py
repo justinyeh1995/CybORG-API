@@ -57,6 +57,6 @@ class User(Base):
     is_superuser = Column(Boolean, default=False)
 
     # Relationship to GameConfiguration
-    configurations = relationship("GameConfiguration", back_populates="user", cascade="all, delete")
+    configurations = relationship("GameConfiguration", back_populates="user", cascade="all, delete-orphan")
     
     
