@@ -44,13 +44,9 @@ def session_fixture():
         db_session: Session = TestSessionLocal() # TODO we have to use the test database instead
         yield db_session
     finally:
-        statement = delete(models.GameConfiguration)
+        statement = delete(models.User)
         db_session.execute(statement)
         db_session.commit()
-
-        # statement = delete(models.User)
-        # db_session.execute(statement)
-        # db_session.commit()
         
         db_session.close()
         
