@@ -21,7 +21,7 @@ from api.v1.FastAPI.api.core import security
 from api.v1.FastAPI.api.core.config import settings
 
 from api.v1.FastAPI.schemas import User, TokenPayload
-
+from api.v1.FastAPI import models
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login/access-token")
 
@@ -35,7 +35,7 @@ def get_db() -> Generator[Session, None, None]:
 SessionDep = Annotated[Session, Depends(get_db)]
 TokenDep = Annotated[str, Depends(oauth2_scheme)]
 
-async def get_current_user(token: str = TokenDep, db: Session = SessionDep):
+async def get_current_user(token: TokenDep, db: SessionDep) -> User:
     # Verify the JWT token using the token endpoint
     # If the token is valid, return the user details
     try:
@@ -48,16 +48,16 @@ async def get_current_user(token: str = TokenDep, db: Session = SessionDep):
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
         )
-    user = crud_user.get_user_by_username(token_data.sub, db)
+    user = crud_user.get_user_by_username(db, token_data.sub)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
-    return user
+    return User.from_orm(user)
 
-CurrentUser = Annotated[User, Depends(get_current_user)]
+CurrentUserDep = Annotated[User, Depends(get_current_user)]
 
-def get_current_active_superuser(current_user: CurrentUser) -> User:
+def get_current_active_superuser(current_user: CurrentUserDep) -> User:
     if not current_user.is_superuser:
         raise HTTPException(
             status_code=403, detail="The user doesn't have enough privileges"
