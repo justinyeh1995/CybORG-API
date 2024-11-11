@@ -83,6 +83,9 @@ class User(Base):
     hashed_password: str
     is_superuser: Union[bool, None] = False
     is_active: Union[bool, None] = True
+
+    class Config:
+        orm_mode = True
     
 #######
 # JWT #
