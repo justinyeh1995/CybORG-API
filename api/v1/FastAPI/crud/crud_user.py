@@ -40,5 +40,11 @@ def get_user_by_username(session: Session, username: str) -> models.User | None:
     user = result.scalars().first()
     return user
 
+def get_user_by_id(session: Session, user_id: str) -> models.User | None:
+    statement = select(models.User).where(models.User.user_id == user_id)
+    result = session.execute(statement)
+    user = result.scalars().first()
+    return user
+
 def authenticate_user(email, password, db):
     pass
