@@ -5,9 +5,15 @@ from sqlalchemy.orm import Session
 from api.v1.FastAPI import models, schemas
 from api.v1.FastAPI.schemas import GameConfig
 
-def start_new_game(game_id: str, game_config: GameConfig, db: Session):
+def start_new_game(user_id: str, game_id: str, game_config: GameConfig, db: Session):
     red_agent, blue_agent, wrapper, steps = game_config.red_agent, game_config.blue_agent, game_config.wrapper, game_config.steps
-    new_game_config = models.GameConfiguration(game_id=game_id, red_agent=red_agent, blue_agent=blue_agent, wrapper=wrapper, steps=steps)
+    new_game_config = models.GameConfiguration(
+        user_id=user_id, 
+        game_id=game_id, 
+        red_agent=red_agent, 
+        blue_agent=blue_agent, 
+        wrapper=wrapper, 
+        steps=steps)
     db.add(new_game_config)
     db.commit()
     db.refresh(new_game_config)
