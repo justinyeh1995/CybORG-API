@@ -24,7 +24,7 @@ import asyncio
 from sqlalchemy.orm import Session
 from api.v1.FastAPI.api.utils.connection_manager import WebSocketConnectionManager
 from api.v1.FastAPI.crud import crud_game as crud
-from api.v1.FastAPI.api.deps import SessionDep
+from api.v1.FastAPI.api.deps import SessionDep, CurrentUserDep
 from api.v1.FastAPI.schemas import GameConfig, GameConfigSummarySchema, GameConfigurationSchema, GameSummarySchema
 import logging
 import inspect
@@ -60,7 +60,7 @@ async def subscribe_to_channel(channel: str) -> AsyncGenerator[str, None]:
 
 # TODO: fix the response model for all the endpoints
 
-@router.get("/", response_model=None, tags=["game"])
+@router.get("/", response_model=None)
 async def get_all_games(db: SessionDep):
     """
     Returns all games stored in the database
@@ -71,12 +71,21 @@ async def get_all_games(db: SessionDep):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/start", response_model=None, tags=["game"])
-async def start_game(config: GameConfig, db: SessionDep):
+@router.post("/start", 
+             response_model=None, 
+             )
+async def start_game(
+    config: GameConfig, 
+    db: SessionDep, 
+    current_user: CurrentUserDep,
+    ):
     """
     Create a new game
     """
     try:
+        user_id = current_user.user_id
+        print("Current user is", user_id)
+        
         # Generate game_id and initialize state
         game_id = str(uuid.uuid4())
 
@@ -132,7 +141,7 @@ async def start_game(config: GameConfig, db: SessionDep):
         runner_proc_tasks[game_id] = [task_stdout, task_stderr]
 
         # store it in the database
-        crud.start_new_game(game_id, config, db)
+        crud.start_new_game(user_id, game_id, config, db)
         print(f"Game started with ID: {game_id}")
         
         return {"game_id": game_id}
@@ -140,7 +149,7 @@ async def start_game(config: GameConfig, db: SessionDep):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/{game_id}", response_model=GameConfigSummarySchema, tags=["game"])
+@router.get("/{game_id}", response_model=GameConfigSummarySchema)
 async def get_game_status(game_id: str, db: SessionDep):
     """
     Returns the game status for the given game_id
@@ -157,7 +166,7 @@ async def get_game_status(game_id: str, db: SessionDep):
     )
     
 
-@router.post("/{game_id}", response_model=None, tags=["game"])
+@router.post("/{game_id}", response_model=None)
 async def run_next_step(game_id: str, db: SessionDep):
     """
     Run the next step in the game and return the game state.
@@ -207,7 +216,7 @@ async def run_next_step(game_id: str, db: SessionDep):
         "Completed": completed
     }
 
-@router.delete("/{game_id}", response_model=None, tags=["game"])
+@router.delete("/{game_id}", response_model=None)
 async def end_game(game_id: str, db: SessionDep):
     """
     Delete a game and associated game states from the database and Redis cache
@@ -248,7 +257,7 @@ async def end_game(game_id: str, db: SessionDep):
     
     return {"message": f"Game with ID {game_id} and {deleted_count} associated game states deleted successfully"}
 
-@router.get("/{game_id}/step/{step}", response_model=None, tags=["game"])
+@router.get("/{game_id}/step/{step}", response_model=None)
 async def get_step_state(game_id: str, step: int, db: SessionDep):
     """
     Returns the state of the game at the given step
@@ -287,7 +296,7 @@ async def websocket_endpoint(websocket: WebSocket, game_id: str):
         await websocket.send_text(f"Error: {str(e)}")
         await websocket.close()
 
-@router.get("/{game_id}/status/", response_model=None, tags=["game"])
+@router.get("/{game_id}/status/", response_model=None)
 async def get_game_status_websocket(game_id: str):
     """
     Returns the status of the game in a WebSocket-friendly format
