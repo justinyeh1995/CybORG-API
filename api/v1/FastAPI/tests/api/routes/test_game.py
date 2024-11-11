@@ -18,16 +18,16 @@ def test_create_game(client: TestClient, test_user_jwt_token):
     r = client.post(
         "/api/games/start",
         headers=test_user_jwt_token,
-        data={
+        json={
             "red_agent": "B_lineAgent", 
             "steps": 10, 
             "blue_agent": "BlueReactRemoveAgent", 
             "wrapper": "simple"
-            }
-        )
+        }
+    )
     
     response = r.json()
-    
+
     assert r.status_code == 200
     assert response.get("game_id") is not None
 
