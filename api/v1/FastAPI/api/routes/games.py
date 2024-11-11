@@ -71,9 +71,7 @@ async def get_all_games(db: SessionDep):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/start", 
-             response_model=None, 
-             )
+@router.post("/start", response_model=None)
 async def start_game(
     config: GameConfig, 
     db: SessionDep, 
