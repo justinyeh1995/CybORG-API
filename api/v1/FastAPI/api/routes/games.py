@@ -90,7 +90,7 @@ async def start_game(
         print(f"AgentRunner.py Path: {agent_runner_abs_path}")
 
         # Start the subprocess using asyncio
-        runner_proc = await asyncio.create_subprocess_exec(
+        runner_proc: asyncio.subprocess.Process = await asyncio.create_subprocess_exec(
             "python3",
             "-u",  # Unbuffered stdout
             agent_runner_abs_path,  # Path to SimpleAgentRunner.py
@@ -148,7 +148,11 @@ async def start_game(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{game_id}", response_model=GameConfigSummarySchema)
-async def get_game_status(game_id: str, db: SessionDep):
+async def get_game_status(
+    game_id: str, 
+    db: SessionDep, 
+    current_user: CurrentUserDep
+    ):
     """
     Returns the game status for the given game_id
     it returns gameConfig model
@@ -165,7 +169,10 @@ async def get_game_status(game_id: str, db: SessionDep):
     
 
 @router.post("/{game_id}", response_model=None)
-async def run_next_step(game_id: str, db: SessionDep):
+async def run_next_step(
+    game_id: str, 
+    db: SessionDep,
+    current_user: CurrentUserDep):
     """
     Run the next step in the game and return the game state.
     No body for this request
