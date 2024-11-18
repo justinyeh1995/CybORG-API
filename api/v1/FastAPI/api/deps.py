@@ -2,7 +2,7 @@ from collections.abc import Generator
 from typing import Annotated
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Request, Depends, HTTPException, status
 from pydantic.networks import EmailStr
 from pydantic import ValidationError
 
@@ -11,6 +11,8 @@ from sqlalchemy.orm import Session
 import jwt
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jwt.exceptions import InvalidTokenError
+
+import redis.asyncio as redis
 
 from api.v1.FastAPI.database import SessionLocal
 from api.v1.FastAPI.crud import crud_user
@@ -23,7 +25,7 @@ from api.v1.FastAPI.api.core.config import settings
 from api.v1.FastAPI.schemas import User, TokenPayload
 from api.v1.FastAPI import models
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login/access-token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login/access-token")
 
 def get_db() -> Generator[Session, None, None]:
     db: Session = SessionLocal()
@@ -32,6 +34,10 @@ def get_db() -> Generator[Session, None, None]:
     finally:
         db.close()
 
+async def get_redis_client(request: Request):
+    return request.app.state.redis_client
+
+# RedisClientDep = Annotated[redis.Redis, Depends(get_redis_client)]
 SessionDep = Annotated[Session, Depends(get_db)]
 TokenDep = Annotated[str, Depends(oauth2_scheme)]
 
