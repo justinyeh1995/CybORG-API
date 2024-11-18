@@ -28,7 +28,7 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 target_metadata = None
 
-from database import Base
+from api.v1.FastAPI.database import Base
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
@@ -36,7 +36,7 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-from api.core.config import settings
+from api.v1.FastAPI.api.core.config import settings
 
 def get_url():
     return str(settings.SQLALCHEMY_DATABASE_URI)
